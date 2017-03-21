@@ -1,25 +1,25 @@
-
 var express = require('express');
 var bodyParser = require('body-parser');
-var cors = require('cors');
-//used for passing of user-agent for response
 var useragent = require('express-useragent');
-//create an instance of express for the app
-var app = module.exports = express();
-app.use(bodyParser.json());
-app.use(cors);
-app.use(useragent.express());
-//Api url
-var api = '/api/whoami';
-app.get(api, function(req, res, next){
-var language = req.acceptsLanguages();
-var software = "OS: " +req.useragent.os + ", Browser: " + res.useragent.browser;
-//create an instance of express for the app
-var ipaddress = req.ip;
+var port = process.env.PORT || 8080;
+var app = express();
 
-res.json({'ipaddress': ipaddress, 'language': language[0], 'software': software});
+app.use(bodyParser.json());
+app.use(useragent.express());
+app.get('/', function(req, res) {
+ 
+//getting sources
+    var headers = req.headers;
+    var ipaddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    var language = headers['accept-language'].split(',');
+    var useragent = headers["user-agent"];
+    
+    res.json({  ipaddress: headers.host,
+                language: language[0],
+                software: req.useragent.platform + ', ' + req.useragent.os
+             });
 });
 
-app.listen(8080, function(){
-    console.log('we are now online');
+app.listen(port, function() {
+    console.log('Server online on port ' + port + '...');
 });
